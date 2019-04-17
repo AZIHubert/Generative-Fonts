@@ -3,7 +3,6 @@ const express = require('express');
 const path = require('path');
 const opn = require('opn');
 const socket = require('socket.io');
-const JSONStream = require( "JSONStream" );
 
 module.exports = {
   test_letter_recognition: test_letter_recognition

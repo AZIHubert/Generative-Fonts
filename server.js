@@ -2,6 +2,11 @@ const cdb = require('./js/create_database');
 const cf = require('./js/create_font');
 const tnn = require('./js/test_nn');
 
+//ba64
+//express
+//opn
+//socket
+
 //cdb.run(0);
 
 //tnn.test_letter_recognition();

@@ -1,7 +1,4 @@
 const fs = require('fs');
-
-const fetch = require("node-fetch");
-
 const express = require('express');
 const opn = require('opn');
 const path = require('path');

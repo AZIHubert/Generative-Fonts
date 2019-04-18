@@ -6,8 +6,8 @@ class Generation{
     this.get_new_gen = false;
     this.calculate_best_letter_once = true;
     this.letter_to_analyse_current = 0;
-    this.min_child_by_letter = 500;
-    this.max_child_by_letter = 500;
+    this.min_child_by_letter = 100;
+    this.max_child_by_letter = 100;
     this.num_polling = 10;
     this.array_rank_calculation = [];
     this.letter_similarity_last_part_current = 0;
@@ -50,10 +50,8 @@ class Generation{
       for(let j = 0; j < this.shapes.length; j++){
         const probability = this.shapes[j].DNA.letters_probability[3];
         probability_medium+=probability/this.shapes.length;
-        if(probability > 0){
-          const genotype = this.shapes[j].DNA.genotype;
-          ranked_shapes_by_letter.push({genotype: genotype, probability: probability});
-        }
+        const genotype = this.shapes[j].DNA.genotype;
+        ranked_shapes_by_letter.push({genotype: genotype, probability: probability});
       }
       ranked_shapes_by_letter.sort((a, b) => a.probability - b.probability);
       console.log('//////////////////////////////////');

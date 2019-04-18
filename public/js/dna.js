@@ -10,39 +10,146 @@ class DNA{
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
    this.mutation_rate = [0.01, 0.5, 0.1];
    this.next_point_random = 0.60;
-   this.grid = 20;
+   this.grid = 4;
    this.num_point = 7;
    this.margin = 5;
  }
  create_new_shape(){
-   const shape = {points: [], property: ["open"]};
-   const num_points = int(random(2, 4));
+   //const shape = {points: [], property: ["open"]};
+   /*const shape = {points: [
+                   {position: {x: 0, y: 0}, sub_shape: [
+                     {points: [
+                       {position: {x: 1, y: 0}},
+                       {position: {x: 1, y: 0}},
+                       {position: {x: 2, y: 0}, sub_shape: [
+                         {points: [
+                           {position: {x: 0, y: 1}},
+                           {position: {x: 0, y: 2}},
+                           {position: {x: 0, y: 1}},
+                           {position: {x: 0, y: 3}},
+                           {position: {x: 0, y: 4}},
+                         ],
+                         property: ["open"]}
+                       ]},
+                       {position: {x: 3, y: 0}, sub_shape: [
+                         {points: [
+                           {position: {x: 0, y: 1}},
+                           {position: {x: 0, y: 2}},
+                           {position: {x: 0, y: 1}},
+                           {position: {x: 0, y: 3}},
+                           {position: {x: 0, y: 4}},
+                         ],
+                         property: ["open"]}
+                       ]}
+                     ],
+                     property: ["open"]}
+                   ]
+                   },
+                   {position: {x: 1, y: 1}},
+                   {position: {x: 2, y: 2}},
+                   {position: {x: 3, y: 3}}
+                 ],
+                 property: ["open"]
+               };*/
+   //const num_points = int(random(2, 4));
+   /*const num_points = 15;
    for(let i = 0; i < num_points; i++){
      let point_x = int(random(0, this.grid));
      let point_y = int(random(0, this.grid));
      const point = {position: {x: point_x, y: point_y}};
      shape.points.push(point);
+   }*/
+   /*const shape1 = {points: [
+                    {position: {x: 0, y: 0}},
+                    {position: {x: 3, y: 0}},
+                    {position: {x: 3, y: 1}, sub_shape: [
+                      {points: [
+                        {position: {x: 2, y: 1}, sub_shape: [
+                          {points: [
+                            {position: {x: 2, y: 2}}
+                          ],
+                          property: ['open']},
+                          {points: [
+                            {position: {x: 1, y: 2}},
+                            {position: {x: 1, y: 2}}
+                          ],
+                          property: ['open']}
+                        ]},
+                        {position: {x: 1, y: 1}},
+                      ],
+                      property: ['open']
+                      },
+                    ]},
+                    {position: {x: 3, y: 3}},
+                    {position: {x: 1, y: 3}},
+                    {position: {x: 1, y: 2}},
+                  ],
+                  property: ['open']
+                };
+   const shape2 = {
+     points: [
+       {position: {x: 0, y: 1}},
+       {position: {x: 0, y: 2}}
+     ],
+     property: ['open']
+   }*/
+   const shape = {points: [
+     {position: {x: 0, y: 0}},
+     {position: {x: 1, y: 0}, sub_shape: [
+       {
+         points: [
+           {position: {x: 1, y: 1}, sub_shape: [
+             {
+               points: [
+
+                   {position: {x: 2, y: 1}},
+                   {position: {x: 2, y: 1}},
+
+               ], property: ['open']
+             }
+           ]},
+           {position: {x: 1, y: 2}},
+         ], property: ['open']
+       }
+     ]},
+     {position: {x: 3, y: 0}, sub_shape: [
+       {
+         points: [
+           {position: {x: 3, y: 1}},
+           {position: {x: 3, y: 2}},
+           {position: {x: 3, y: 2}},
+           {position: {x: 3, y: 2}},
+         ],
+         property: ['open']
+       }
+     ]},
+   ], property: ['open']
+
    }
    this.genotype.push(shape);
-   this.remove_double()
+   this.remove_empty_shape();
+   this.remove_double();
  }
+
+ /* Check */
  display(){
    let sub_shapes = [];
-   for(let shape of this.genotype){
-      sub_shapes.push({shape: shape});
+   for(let i = 0; i < this.genotype.length; i++){
+     const points = this.genotype[i].points.map(a => {return {...a}});
+     sub_shapes.push({points: points, property: this.genotype[i].property});
    }
    let has_sub_shape = true;
    while(has_sub_shape){
      let count_sub_shape = 0;
-     for(let shape of sub_shapes){
-       for(let point of shape.shape.points){
-         if(point.hasOwnProperty('sub_shape')){
-           count_sub_shape++;
-           const attach = point.position;
-           for(let sub of point.sub_shape){
-             sub_shapes.push({shape: sub, attach: attach});
+     for(let i = 0; i < sub_shapes.length; i++){
+       for(let j = 0; j < sub_shapes[i].points.length; j++){
+         if(sub_shapes[i].points[j].hasOwnProperty('sub_shape')){
+         count_sub_shape++;
+           for(let k = 0; k < sub_shapes[i].points[j].sub_shape.length; k++){
+             const attach = sub_shapes[i].points.map(a => {return {...a}});
+             sub_shapes.push({points: sub_shapes[i].points[j].sub_shape[k].points.map(a => {return {...a}}), attach: attach[j].position, property: sub_shapes[i].points[j].sub_shape[k].property});
            }
-           delete point.sub_shape;
+           delete sub_shapes[i].points[j].sub_shape;
          }
        }
      }
@@ -50,7 +157,7 @@ class DNA{
    }
    background(255);
    for(let shape of sub_shapes){
-     if(shape.shape.property.includes("fill")){
+     if(shape.property.includes("fill")){
        stroke(0);
        fill(0);
      } else{
@@ -63,18 +170,19 @@ class DNA{
        const point_y = map(shape.attach.y, 0, this.grid - 1, this.margin, width - this.margin);
        vertex(point_x, point_y);
      }
-     for(let point of shape.shape.points){
+     for(let point of shape.points){
        const point_x = map(point.position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(point.position.y, 0, this.grid - 1, this.margin, width - this.margin);
        vertex(point_x, point_y);
      }
-     if(shape.shape.property.includes('close')){
+     if(shape.property.includes('close')){
        endShape(CLOSE);
      } else{
        endShape();
      }
    }
  }
+ /* Check */
  get_pixels(){
    if(this.pixels.length == 0){
      this.display();
@@ -86,6 +194,7 @@ class DNA{
      updatePixels();
    }
  }
+ /* Check */
  crossover(parent_A, parent_B){
    const p_A = parent_A.slice();
    const p_B = parent_B.slice();
@@ -117,10 +226,11 @@ class DNA{
      }
    }
    this.remove_empty_shape();
-   this.mutation();
-   this.remove_empty_shape();
    this.remove_double();
+   /*this.mutation();
+   this.remove_double();*/
   }
+  /* Check */
   remove_empty_shape(){
     for(let i = this.genotype.length - 1; i >= 0; i--){
       if(this.genotype[i].points.length <= 1){
@@ -166,18 +276,38 @@ class DNA{
     // Change close fill or not
   }
   get_double(){
-    // for each shape and each subShape
-    // If subshape, create path to the point
-    // Exemple
-      // 0, 1, 3, 1 =>
-      // Shape 0, point 1, Point 3, point 1
-    let point_to_remove = [];
+    let sub_shapes = [];
     for(let i = 0; i < this.genotype.length; i++){
+      const points = this.genotype[i].points.map(a => {return {...a}});
+      sub_shapes.push({points: points, path: [i]});
+    }
+    let has_sub_shape = true;
+    while(has_sub_shape){
+      let count_sub_shape = 0;
+      for(let i = 0; i < sub_shapes.length; i++){
+        for(let j = 0; j < sub_shapes[i].points.length; j++){
+          if(sub_shapes[i].points[j].hasOwnProperty('sub_shape')){
+            count_sub_shape++;
+            for(let k = 0; k < sub_shapes[i].points[j].sub_shape.length; k++){
+              const path = sub_shapes[i].path.slice();
+              path.push(j);
+              path.push(k);
+              sub_shapes.push({points: sub_shapes[i].points[j].sub_shape[k].points.map(a => {return {...a}}), path: path});
+            }
+            delete sub_shapes[i].points[j].sub_shape;
+          }
+        }
+      }
+
+      has_sub_shape = (count_sub_shape) ? true: false;
+    }
+    let point_to_remove = [];
+    for(let i = 0; i < sub_shapes.length; i++){
       point_to_remove[i] = [];
-      for(let j = 0; j < this.genotype[i].points.length; j++){
-        const point_position = this.genotype[i].points[j].position;
+      for(let j = 0; j < sub_shapes[i].points.length; j++){
+        const point_position = sub_shapes[i].points[j].position;
         if (!point_to_remove[i].some(e => (e.point.x == point_position.x && e.point.y == point_position.y))) {
-          point_to_remove[i].push({point: point_position, index: [j]});
+          point_to_remove[i].push({point: point_position, index: [j], path: sub_shapes[i].path});
         } else {
           let index;
           point_to_remove[i].some((e, k) => {
@@ -189,6 +319,7 @@ class DNA{
         }
       }
     }
+    point_to_remove.reverse();
     let is_not_empty = 0;
     for(let i = point_to_remove.length - 1; i >= 0; i--){
       for(let j = point_to_remove[i].length - 1; j >= 0; j--){
@@ -202,46 +333,129 @@ class DNA{
   remove_double(){
     let remove_array = this.get_double();
     let shape_to_check = 0;
-    if(remove_array.length){
-      while(remove_array.length){
-        if(remove_array[shape_to_check].length){
-          const distance_array = [];
-          for(let k = 0; k < remove_array[shape_to_check][0].index.length - 1; k++){
-            const distance = abs(remove_array[i][0].index[k] - remove_array[shape_to_check][0].index[k + 1]);
-            distance_array.push({distance: distance, indexes: [remove_array[shape_to_check][0].index[k], remove_array[shape_to_check][0].index[k + 1]]});
-          }
-          distance_array.sort((a, b) => a.distance - b.distance);
-          if(distance_array[0].distance == 1){
-            this.genotype[i].points.splice(distance_array[0].indexes[1] - 1, 1);
-          } else if(distance_array[0].distance == 2){
-            const first_array = this.genotype[i].points.slice(0, distance_array[0].indexes[1]);
-            const second_array = this.genotype[i].points.slice(distance_array[0].indexes[1] + 1);
-            this.genotype[i].points = second_array.concat(first_array);
-          } else{
-            const first_array = this.genotype[i].points.slice(0, distance_array[0].indexes[0]);
-            const second_array = this.genotype[i].points.slice(distance_array[0].indexes[0], distance_array[0].indexes[1]);
-            const third_array = this.genotype[i].points.slice(distance_array[0].indexes[1] + 1);
-            this.genotype[i].points = second_array;
-            this.genotype[i].property = ['close'];
-            if(random(0, 1) > 0.5){
-              this.genotype[i].property.push('fill');
-            }
-            if(first_array.length || third_array.length){
-              this.genotype[i].points[distance_array[0].indexes[0] - first_array.length].sub_shape = [];
-              if(first_array.length){
-                this.genotype[i].points[distance_array[0].indexes[0] - first_array.length].sub_shape.push({points: first_array, property: ["open"]});
-              }
-              if(third_array.length){
-                this.genotype[i].points[distance_array[0].indexes[0] - first_array.length].sub_shape.push({points: third_array, property: ["open"]})
-              }
-            }
-          }
-          remove_array = this.get_double();
-        } else {
+    //while(remove_array.length){
+      if(remove_array.length){
+        while(!remove_array[shape_to_check].length && shape_to_check < remove_array.length - 1){
           shape_to_check++;
         }
+        const distance_array = [];
+        for(let i = 0; i <  remove_array[shape_to_check].length; i++){
+          for(let j = 0; j < remove_array[shape_to_check][i].index.length - 1; j++){
+            const distance = abs(remove_array[shape_to_check][i].index[j] - remove_array[shape_to_check][i].index[j + 1]);
+            distance_array.push({distance: distance, indexes: [remove_array[shape_to_check][i].index[j], remove_array[shape_to_check][i].index[j + 1]]});
+          }
+        }
+        distance_array.sort((a, b) => a.distance - b.distance);
+        let shapes = []
+        shapes.push(this.genotype[remove_array[shape_to_check][0].path[0]]);
+        for(let i = 1; i < remove_array[shape_to_check][0].path.length; i++){
+          if(i % 2){
+            shapes.push(shapes[shapes.length -1].points[remove_array[shape_to_check][0].path[i]].sub_shape);
+          } else {
+            shapes.push(shapes[shapes.length -1][remove_array[shape_to_check][0].path[i]]);
+          }
+        }
+        const shape = shapes[shapes.length - 1];
+        if(distance_array[0].distance == 1){
+          if(shape.points[distance_array[0].indexes[1]].hasOwnProperty('sub_shape')){
+            if(shape.points[distance_array[0].indexes[0]].hasOwnProperty('sub_shape')){
+              shape.points[distance_array[0].indexes[0]].sub_shape.push(shape.points[distance_array[0].indexes[1]].sub_shape);
+            } else {
+              shape.points[distance_array[0].indexes[0]].sub_shape = shape.points[distance_array[0].indexes[1]].sub_shape;
+            }
+          }
+          shape.points.splice(distance_array[0].indexes[1], 1);
+        }
       }
-    }
+      console.log(this.genotype);
+    //}
+    /*let shape_to_check = 0;
+    if(remove_array.length){
+      while(remove_array.length){
+        if(remove_array[shape_to_check] !== 'undefined'){
+          if(remove_array[shape_to_check].length != 0){
+            const distance_array = [];
+            for(let k = 0; k < remove_array[shape_to_check][0].index.length - 1; k++){
+              const distance = abs(remove_array[shape_to_check][0].index[k] - remove_array[shape_to_check][0].index[k + 1]);
+              distance_array.push({distance: distance, indexes: [remove_array[shape_to_check][0].index[k], remove_array[shape_to_check][0].index[k + 1]]});
+            }
+            distance_array.sort((a, b) => a.distance - b.distance);
+
+
+            let shapes = []
+            shapes.push(this.genotype[remove_array[shape_to_check][0].path[0]]);
+            for(let i = 1; i < remove_array[shape_to_check][0].path.length; i++){
+              if(i % 2){
+                shapes.push(shapes[shapes.length -1].points[remove_array[shape_to_check][0].path[i]].sub_shape);
+              } else {
+                shapes.push(shapes[shapes.length -1][remove_array[shape_to_check][0].path[i]]);
+              }
+            }
+
+
+
+            if(distance_array[0].distance == 1){
+              if(shapes[shapes.length -1].points[distance_array[0].indexes[1]].hasOwnProperty('sub_shape')){
+                shapes[shapes.length -1].points[distance_array[0].indexes[0]].sub_shape = shapes[shapes.length -1].points[distance_array[0].indexes[1]].sub_shape;
+              }
+              shapes[shapes.length -1].points.splice(distance_array[0].indexes[1], 1);
+            } else if(distance_array[0].distance == 2){
+              if(shapes[shapes.length -1].points[distance_array[0].indexes[1]].hasOwnProperty('sub_shape')){
+                shapes[shapes.length -1].points[distance_array[0].indexes[0]].sub_shape = shapes[shapes.length -1].points[distance_array[0].indexes[1]].sub_shape;
+              }
+              const first_array = shapes[shapes.length -1].points.slice(0, distance_array[0].indexes[1]);
+              const second_array = shapes[shapes.length -1].points.slice(distance_array[0].indexes[1] + 1);
+              if(distance_array[0].indexes[0] == 0){
+                shapes[shapes.length -1].points = second_array.concat(first_array);
+              } else {
+                shapes[shapes.length -1].points = first_array;
+                if(second_array.length){
+                  if(!shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].hasOwnProperty('sub_shape')){
+                    shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].sub_shape = [];
+                  }
+                  shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].sub_shape.push({points: second_array, property: ["open"]});
+                }
+              }
+
+
+
+            } else{
+              console.log('Distance 3')
+              if(shapes[shapes.length -1].points[distance_array[0].indexes[1]].hasOwnProperty('sub_shape')){
+                shapes[shapes.length -1].points[distance_array[0].indexes[0]].sub_shape = shapes[shapes.length -1].points[distance_array[0].indexes[1]].sub_shape;
+              }
+              const first_array = shapes[shapes.length -1].points.slice(0, distance_array[0].indexes[0]);
+              const second_array = shapes[shapes.length -1].points.slice(distance_array[0].indexes[0], distance_array[0].indexes[1]);
+              const third_array = shapes[shapes.length -1].points.slice(distance_array[0].indexes[1] + 1);
+              shapes[shapes.length -1].points = second_array;
+              shapes[shapes.length -1].property = ['close'];
+              if(random(0, 1) > 0.5){
+
+                shapes[shapes.length -1].property.push('fill');
+              }
+              if(first_array.length || third_array.length){
+                if(!shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].hasOwnProperty('sub_shape')){
+                  shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].sub_shape = [];
+                if(first_array.length){
+
+
+                  shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0]].sub_shape.push({points: first_array, property: ["open"]});
+                }
+                if(third_array.length){
+
+
+                  shapes[shapes.length -1].points[first_array.length - distance_array[0].indexes[0] ].sub_shape.push({points: third_array, property: ["open"]})
+                }
+              }
+            }
+            shapes = [];
+            remove_array = this.get_double();
+          } else {
+            shape_to_check++;
+          }
+        }
+      }
+    }*/
   }
   move_sub_shape(){
     // If has sub_shapes

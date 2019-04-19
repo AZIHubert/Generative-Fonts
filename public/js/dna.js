@@ -10,140 +10,19 @@ class DNA{
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
    this.mutation_rate = [0.01, 0.5, 0.1];
    this.next_point_random = 0.60;
-   this.grid = 10;
+   this.grid = 4;
    this.num_point = 7;
    this.margin = 5;
  }
  create_new_shape(){
-   /*const shape = {points: [
-                   {position: {x: 0, y: 0}, sub_shape: [
-                     {points: [
-                       {position: {x: 1, y: 0}},
-                       {position: {x: 1, y: 0}},
-                       {position: {x: 2, y: 0}, sub_shape: [
-                         {points: [
-                           {position: {x: 0, y: 1}},
-                           {position: {x: 0, y: 2}},
-                           {position: {x: 0, y: 1}},
-                           {position: {x: 0, y: 3}},
-                           {position: {x: 0, y: 4}},
-                         ],
-                         property: ["open"]}
-                       ]},
-                       {position: {x: 3, y: 0}, sub_shape: [
-                         {points: [
-                           {position: {x: 0, y: 1}},
-                           {position: {x: 0, y: 2}},
-                           {position: {x: 0, y: 1}},
-                           {position: {x: 0, y: 3}},
-                           {position: {x: 0, y: 4}},
-                         ],
-                         property: ["open"]}
-                       ]}
-                     ],
-                     property: ["open"]}
-                   ]
-                   },
-                   {position: {x: 1, y: 1}},
-                   {position: {x: 2, y: 2}},
-                   {position: {x: 3, y: 3}}
-                 ],
-                 property: ["open"]
-               };*/
-
-   /*const shape1 = {points: [
-                    {position: {x: 0, y: 0}},
-                    {position: {x: 3, y: 0}},
-                    {position: {x: 3, y: 1}, sub_shape: [
-                      {points: [
-                        {position: {x: 2, y: 1}, sub_shape: [
-                          {points: [
-                            {position: {x: 2, y: 2}}
-                          ],
-                          property: ['open']},
-                          {points: [
-                            {position: {x: 1, y: 2}},
-                            {position: {x: 1, y: 2}}
-                          ],
-                          property: ['open']}
-                        ]},
-                        {position: {x: 1, y: 1}},
-                      ],
-                      property: ['open']
-                      },
-                    ]},
-                    {position: {x: 3, y: 3}},
-                    {position: {x: 1, y: 3}},
-                    {position: {x: 1, y: 2}},
-                  ],
-                  property: ['open']
-                };
-   const shape2 = {
-     points: [
-       {position: {x: 0, y: 1}},
-       {position: {x: 0, y: 2}}
-     ],
-     property: ['open']
-   }*/
-   /*const shape = {points: [
-     {position: {x: 1, y: 3}},
-     {position: {x: 0, y: 0}},
-     {position: {x: 3, y: 0}},
-     {position: {x: 3, y: 2}},
-     {position: {x: 0, y: 0}},
-     {position: {x: 0, y: 1}},
-     ], property: ['open']
-
-   }*/
-
-   //const num_points = int(random(2, 4));
    const shape = {points: [], property: ["open"]};
-   const num_points = 8;
+   const num_points = 6;
    for(let i = 0; i < num_points; i++){
      let point_x = int(random(0, this.grid));
      let point_y = int(random(0, this.grid));
      const point = {position: {x: point_x, y: point_y}};
      shape.points.push(point);
    }
-   /*const shape = {points: [
-     {position: {x: 0, y: 0}},
-     {position: {x: 1, y: 0}, sub_shape: [
-      {
-        points: [
-          {position: {x: 1, y: 1}, sub_shape: [
-            {
-              points: [
-                {position: {x: 0, y: 1}},
-                {position: {x: 0, y: 2}, sub_shape: [
-                  {
-                    points: [
-                      {position: {x: 0, y: 3}},
-                      {position: {x: 0, y: 3}},
-                      {position: {x: 3, y: 3}},
-                      {position: {x: 0, y: 3}},
-                      {position: {x: 3, y: 3}},
-                      {position: {x: 2, y: 3}},
-                      {position: {x: 2, y: 2}},
-                      {position: {x: 3, y: 3}},
-                    ], property: ['open']
-                  }
-                ]},
-                {position: {x: 1, y: 2}},
-                {position: {x: 0, y: 1}}
-              ], property: ['open']
-            }
-          ]},
-          {position: {x: 1, y: 2}},
-          {position: {x: 2, y: 2}},
-          {position: {x: 1, y: 1}},
-        ],
-        property: ['open']
-      }
-     ]},
-     {position: {x: 3, y: 0}},
-     ], property: ['open']
-
-   }*/
    this.genotype.push(shape);
    this.remove_empty_shape();
    this.remove_double();
@@ -264,8 +143,7 @@ class DNA{
    }
    this.remove_empty_shape();
    this.remove_double();
-   /*this.mutation();
-   this.remove_double();*/
+   /*this.mutation();*/
   }
   /* Check */
   remove_empty_shape(){
@@ -393,15 +271,6 @@ class DNA{
           }
         }
         const shape = shapes[shapes.length - 1];
-        /*if(shape.points[distance_array[0].indexes[1]].hasOwnProperty('sub_shape')){
-          if(shape.points[distance_array[0].indexes[0]].hasOwnProperty('sub_shape')){
-            for(let sub of shape.points[distance_array[0].indexes[1]].sub_shape){
-              shape.points[distance_array[0].indexes[0]].sub_shape.push(sub);
-            }
-          } else {
-            shape.points[distance_array[0].indexes[0]].sub_shape = shape.points[distance_array[0].indexes[1]].sub_shape;
-          }
-        }*/
         if(distance_array[0].distance == 1){
           shape.points.splice(distance_array[0].indexes[1], 1);
         } else if(distance_array[0].distance == 2){
@@ -467,6 +336,7 @@ class DNA{
             }
           }
         } else {
+          // Need to change when when sub_shape
           const first_array = shape.points.slice(0, distance_array[0].indexes[0]);
           const second_array = shape.points.slice(distance_array[0].indexes[0], distance_array[0].indexes[1]);
           const third_array = shape.points.slice(distance_array[0].indexes[1] + 1);
@@ -486,13 +356,15 @@ class DNA{
               })
             }
           }
-          shape.property = ['close', 'fill'];
+          shape.property = ['close'];
+          if(random(0, 1) > 0.5){
+            shape.property.push('fill');
+          }
           shape.points = second_array;
         }
       }
       remove_array = this.get_double();
     }
-    console.log(this.genotype);
   }
   move_sub_shape(){
     // If has sub_shapes

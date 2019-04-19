@@ -15,17 +15,34 @@ class DNA{
    this.margin = 5;
  }
  create_new_shape(){
-   const shape = {points: [], property: ["open"]};
+   /*const shape = {points: [], property: ["open"]};
    const num_points = 6;
    for(let i = 0; i < num_points; i++){
      let point_x = int(random(0, this.grid));
      let point_y = int(random(0, this.grid));
      const point = {position: {x: point_x, y: point_y}};
      shape.points.push(point);
+   }*/
+   const shape = {
+     points: [
+       {position: {x: 0, y: 0}},
+       {position: {x: 1, y: 0}, sub_shape: [
+         {
+           points: [
+             {position: {x: 2, y: 0}},
+             {position: {x: 2, y: 1}}
+         ],
+           property: ['open']
+         }
+       ]},
+       {position: {x: 2, y: 0}}
+     ],
+     property: ['open']
    }
    this.genotype.push(shape);
    this.remove_empty_shape();
    this.remove_double();
+   this.move_sub_shape();
  }
 
  /* Check */
@@ -143,6 +160,7 @@ class DNA{
    }
    this.remove_empty_shape();
    this.remove_double();
+   this.move_sub_shape();
    /*this.mutation();*/
   }
   /* Check */
@@ -190,6 +208,7 @@ class DNA{
 
     // Change close fill or not
   }
+  /* Check */
   get_double(){
     let sub_shapes = [];
     for(let i = 0; i < this.genotype.length; i++){
@@ -213,7 +232,6 @@ class DNA{
           }
         }
       }
-
       has_sub_shape = (count_sub_shape) ? true: false;
     }
     let point_to_remove = [];
@@ -245,6 +263,7 @@ class DNA{
     if(!is_not_empty) point_to_remove = [];
     return point_to_remove;
   }
+  /* Check */
   remove_double(){
     let remove_array = this.get_double();
     while(remove_array.length){
@@ -336,7 +355,6 @@ class DNA{
             }
           }
         } else {
-          // Need to change when when sub_shape
           const first_array = shape.points.slice(0, distance_array[0].indexes[0]);
           const second_array = shape.points.slice(distance_array[0].indexes[0], distance_array[0].indexes[1]);
           const third_array = shape.points.slice(distance_array[0].indexes[1] + 1);
@@ -366,12 +384,103 @@ class DNA{
       remove_array = this.get_double();
     }
   }
+  /*Check*/
+  get_sub_shapes_to_move(){
+      let sub_shapes = [];
+      for(let i = 0; i < this.genotype.length; i++){
+        const points = this.genotype[i].points.map(a => {return {...a}});
+        sub_shapes.push({points: points, path: [i]});
+      }
+      let has_sub_shape = true;
+      while(has_sub_shape){
+        let count_sub_shape = 0;
+        for(let i = 0; i < sub_shapes.length; i++){
+          for(let j = 0; j < sub_shapes[i].points.length; j++){
+            if(sub_shapes[i].points[j].hasOwnProperty('sub_shape')){
+              count_sub_shape++;
+              for(let k = 0; k < sub_shapes[i].points[j].sub_shape.length; k++){
+                const path = sub_shapes[i].path.slice();
+                path.push(j);
+                path.push(k);
+                const neighbour_points = [];
+                if(j - 1 >= 0){
+                  const neighbour_point_position = {x: sub_shapes[i].points[j - 1].position.x, y: sub_shapes[i].points[j - 1].position.y}
+                  neighbour_points.push({path: j - 1, position: neighbour_point_position});
+                }
+                if(j + 1 < sub_shapes[i].points.length){
+                  const neighbour_point_position = {x: sub_shapes[i].points[j + 1].position.x, y: sub_shapes[i].points[j + 1].position.y}
+                  neighbour_points.push({path: j + 1, position: neighbour_point_position});
+                }
+                sub_shapes.push({points: sub_shapes[i].points[j].sub_shape[k].points.map(a => {return {...a}}), neighbour_points: neighbour_points, path: path});
+              }
+              delete sub_shapes[i].points[j].sub_shape;
+            }
+          }
+        }
+        has_sub_shape = (count_sub_shape) ? true: false;
+      }
+      for(let i = sub_shapes.length - 1; i >= 0; i--){
+        if(!sub_shapes[i].hasOwnProperty('neighbour_points')){
+          sub_shapes.splice(i, 1);
+        }else {
+          for(let j = sub_shapes[i].neighbour_points.length - 1; j >= 0 ; j--){
+            if(sub_shapes[i].points[0].position.x != sub_shapes[i].neighbour_points[j].position.x || sub_shapes[i].points[0].position.y != sub_shapes[i].neighbour_points[j].position.y){
+              sub_shapes[i].neighbour_points.splice(j, 1);
+            }
+          }
+          if(!sub_shapes[i].neighbour_points.length) sub_shapes.splice(i, 1);
+        }
+      }
+      return sub_shapes;
+  }
   move_sub_shape(){
-    // If has sub_shapes
-    // Create path
-    // If subshape.point[0] == parent_point.index + 1 or - 1
-      // subshape.point[0].splice(0, 1)
-      // Move subshape to parent_point.index + 1 or - 1
+    const sub_shape_to_move = this.get_sub_shapes_to_move();
+    //while(sub_shape_to_move.length){
+    // Need to check if sub_shape_to_move.length != 0
+      const shape_to_push = [];
+      const shape_to_remove = [];
+      shape_to_push.push(this.genotype[sub_shape_to_move[0].path[0]]);
+      shape_to_remove.push(this.genotype[sub_shape_to_move[0].path[0]]);
+      for(let i = 1; i < sub_shape_to_move[0].path.length; i++){
+        if(i < sub_shape_to_move[0].path.length - 2){
+          if(i % 2){
+            shape_to_push.push(shape_to_push[shape_to_remove.length -1].points[sub_shape_to_move[0].path[i]].sub_shape);
+          } else {
+            shape_to_push.push(shape_to_push[shape_to_remove.length -1][sub_shape_to_move[0].path[i]]);
+          }
+        }
+        if(i % 2){
+          shape_to_remove.push(shape_to_remove[shape_to_remove.length -1].points[sub_shape_to_move[0].path[i]].sub_shape);
+        } else {
+          shape_to_remove.push(shape_to_remove[shape_to_remove.length -1][sub_shape_to_move[0].path[i]]);
+        }
+      }
+      /*console.log('Position du point voisin =');
+      console.log(sub_shape_to_move[0].neighbour_points[0].path);
+      console.log('Position du qui contient la sub_shape =');
+      console.log(sub_shape_to_move[0].path[sub_shape_to_move[0].path.length - 2]);
+      console.log('Shape du point ou bouger la sub_shape =');
+      console.log(shape_to_push[shape_to_push.length - 1]);
+      console.log('Shape de la sub_shape =');*/
+      const new_sub_shape = shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].path[sub_shape_to_move[0].path.length - 2]].sub_shape.splice(sub_shape_to_move[0].path[sub_shape_to_move[0].path.length - 1], 1);
+      new_sub_shape[0].points.splice(0, 1);
+      if(shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].path[sub_shape_to_move[0].path.length - 2]].sub_shape.length == 0){
+        delete shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].path[sub_shape_to_move[0].path.length - 2]].sub_shape;
+      }
+
+      if(new_sub_shape.length > 0){
+        if(!shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].neighbour_points[0].path].hasOwnProperty('sub_shape')){
+          shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].neighbour_points[0].path].sub_shape = [];
+        }
+        // If sub_shape_to_move[0].neighbour_points[0].path is last or first point && don't have close property
+            // Need also to check how it work with close property
+        // else =
+        shape_to_push[shape_to_push.length - 1].points[sub_shape_to_move[0].neighbour_points[0].path].sub_shape.push(new_sub_shape[0])
+      }
+
+
+
+    //}
   }
   create_weight(){
     // Need to modify genotype to add weights padding to each points

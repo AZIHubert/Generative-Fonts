@@ -8,7 +8,7 @@ class Population{
     this.wait = false;
   }
   async load_model(){
-    this.model_font_recognition =  await tf.loadLayersModel('http://localhost:3000/assets/models/letter_recognition/model_0/model.json');
+    this.model_font_recognition =  await tf.loadLayersModel('http://localhost:3000/assets/models/letter_recognition/model_1/model.json');
   }
   create_first_generation(){
     this.load_model().then(() => {

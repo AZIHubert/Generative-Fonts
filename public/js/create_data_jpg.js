@@ -25,7 +25,7 @@ function preload(){
 }
 function setup(){
   socket = io.connect('http://localhost:3000');
-  createCanvas(64, 64);
+  createCanvas(128, 128);
   background(0);
   pixelDensity(1);
   smooth();

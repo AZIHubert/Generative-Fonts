@@ -1,3 +1,13 @@
+function arraysEqual(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 class DNA{
  constructor(){
    this.genotype = [];
@@ -8,43 +18,41 @@ class DNA{
    this.letter_similarity_probability = 0;
    this.letters_probability_ratio = 0.99
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
-   this.mutation_rate = [0.01, 0.5, 0.1];
+   this.mutation_rate = [0.01, 0.3, 0.4];
    this.next_point_random = 0.60;
-   this.grid = 12;
+   this.grid = 6;
    this.num_point = 7;
    this.margin = 5;
  }
  create_new_shape(){
-
-   const shapes = [];
-   const num_points = 4;
-   const num_shapes = int(random(1, 3));
-   for(let j = 0; j < num_shapes; j++){
-     const shape = {points: [], property: ["open"]};
-     for(let i = 0; i < num_points; i++){
-       let point_x = int(random(0, this.grid));
-       let point_y = int(random(0, this.grid));
-       let point;
-       if(i == 0 || random(0, 1) > 0.5){
+   const num_points = 3;
+   const shape = {points: [], property: ["open"]};
+   for(let i = 0; i < num_points; i++){
+     let point_x = int(random(0, this.grid));
+     let point_y = int(random(0, this.grid));
+     let point;
+     if(i == 0){
+       point = {position: {x: point_x, y: point_y}};
+     }else{
+       if(random(0, 1) > 0.5){
          point = {position: {x: point_x, y: point_y}};
        } else{
         const control_points = [];
         for(let k = 0; k < 4; k++){
           control_points.push(int(random(0, this.grid)))
         }
-        point = {position: {x: point_x, y: point_y}, bezier: true, control_point: control_points};
-      }
-      shape.points.push(point)
+        point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points};
+       }
      }
-     shapes.push(shape)
+     shape.points.push(point);
    }
-   this.genotype = shapes;
-   console.log(this.genotype)
+   this.genotype.push(shape);
+
    this.remove_empty_shape();
    this.remove_double();
    this.move_sub_shape();
+   this.remove_first_bezier_point();
  }
-
  /* Check */
  display(){
    let sub_shapes = [];
@@ -87,7 +95,16 @@ class DNA{
      for(let point of shape.points){
        const point_x = map(point.position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(point.position.y, 0, this.grid - 1, this.margin, width - this.margin);
-       vertex(point_x, point_y);
+       if(point.hasOwnProperty('bezier')){
+         const x2 = point.control_points[0];
+         const y2 = point.control_points[1];
+         const x3 = point.control_points[2];
+         const y3 = point.control_points[3];
+         bezierVertex(x2, y2, x3, y3, point_x, point_y);
+       } else{
+         vertex(point_x, point_y);
+       }
+
      }
      if(shape.hasOwnProperty("attach") && shape.property.includes('close')){
        const point_x = map(shape.points[0].position.x, 0, this.grid - 1, this.margin, width - this.margin);
@@ -123,6 +140,7 @@ class DNA{
        property: shape.property
      });
    }
+
    const p_B = []
    for(let shape of parent_B){
      const points = shape.points.map(a => {return {...a}});
@@ -161,7 +179,12 @@ class DNA{
    this.remove_empty_shape();
    this.remove_double();
    this.move_sub_shape();
-   /*this.mutation();*/
+   this.remove_first_bezier_point();
+   this.mutation();
+   this.remove_empty_shape();
+   this.remove_double();
+   this.move_sub_shape();
+   this.remove_first_bezier_point();
   }
   /* Check */
   remove_empty_shape(){
@@ -172,41 +195,112 @@ class DNA{
     }
   }
   mutation(){
-    // For each shape and each subShape;
-    // Change point
+    let sub_shapes = [];
     for(let i = 0; i < this.genotype.length; i++){
-      for(let j = 0; j < this.genotype[i].points.length; j++){
-        if(random(0, 1) < this.mutation_rate[0]){
-          let new_point_x = int(random(0, this.grid));
-          let new_point_y = int(random(0, this.grid));
-          this.genotype[i].points.splice(j, 1, {position: {x: new_point_x, y: new_point_y}});
+      const points = this.genotype[i].points.map(a => {return {...a}});
+      sub_shapes.push({points: points, path: [i]});
+    }
+    let has_sub_shape = true;
+    while(has_sub_shape){
+      let count_sub_shape = 0;
+      for(let i = 0; i < sub_shapes.length; i++){
+        for(let j = 0; j < sub_shapes[i].points.length; j++){
+          if(sub_shapes[i].points[j].hasOwnProperty('sub_shape')){
+            count_sub_shape++;
+            for(let k = 0; k < sub_shapes[i].points[j].sub_shape.length; k++){
+              const path = sub_shapes[i].path.slice();
+              path.push(j);
+              path.push(k);
+              sub_shapes.push({points: sub_shapes[i].points[j].sub_shape[k].points.map(a => {return {...a}}), path: path});
+            }
+            delete sub_shapes[i].points[j].sub_shape;
+          }
         }
       }
-      // Add Point
-      if(random(0, 1) < this.mutation_rate[1]){
-        const which_shape = int(random(0, this.genotype.length));
-        let point_x = int(random(0, this.grid));
-        let point_y = int(random(0, this.grid));
-        const point = {position: {x: point_x, y: point_y}};
-        this.genotype[which_shape].points.push(point);
+      has_sub_shape = (count_sub_shape) ? true: false;
+    }
+    const shapes = [];
+    const index = [];
+    for(let i = 0; i < sub_shapes.length; i++){
+      let shape = [];
+      shape.push(this.genotype[sub_shapes[i].path[0]]);
+      let index_include_path = false;
+      for(let j = 0; j < index.length; j++){
+        if(arraysEqual(index[j], [sub_shapes[i].path[0]])) index_include_path = true;
+      }
+      if(!index_include_path){
+        index.push([sub_shapes[i].path[0]]);
+        shapes.push(shape[shape.length - 1]);
+      }
+      for(let j = 1; j < sub_shapes[i].path.length; j++){
+        if(j % 2){
+          shape.push(shape[shape.length - 1].points[sub_shapes[i].path[j]].sub_shape);
+        } else{
+          shape.push(shape[shape.length - 1][sub_shapes[i].path[j]]);
+          let index_include_path = false;
+          for(let k = 0; k < index.length; k++){
+            if(arraysEqual(index[k], sub_shapes[i].path.slice(0, j))) index_include_path = true;
+          }
+          if(!index_include_path){
+            index.push(sub_shapes[i].path.slice(0, j));
+            shapes.push(shape[shape.length - 1]);
+          }
+        }
       }
     }
-
-    // Remove point
-    //if lenth > 3 for each shape and each sub shape
-      // If break shape, create 2 shape
-      // If close
-        // property == open
-        // if first or second has subshape
-          // If subshape.length == 1
-            // subshape become part of shape
-          // else chose one to become part of it
-
-    // Create subShape
-      // For each shape and each sub_shape
-        // Create a subShape to a random choosen point
-
-    // Change close fill or not
+    for(let shape of shapes){
+      if(random(0, 1) < 0.0005){
+        if(shape.property.includes('open')){
+          shape.property = ['close'];
+          if(random(0, 1) < 0.0005) shape.property.push('fill');
+        } else{
+          shape.property = ['open'];
+        }
+      } else if(shape.property.includes('close')){
+        if(random(0, 1) < 0.0005){
+          if(shape.property.includes('fill')){
+            shape.property = ['close']
+          } else{
+            shape.property.push('fill');
+          }
+        }
+      }
+      if(random(0, 1) < 0.01 && shape.points.length > 5){
+        // Splite une two shape if wich point is between 2 and length - 2 and not open and if has sub_shape
+        const wich_point = int(random(0, shape.points.length));
+        shape.points.splice(wich_point, 1);
+      }
+      if(random(0, 1) < 0.01){
+        let point;
+        const point_x = int(random(0, this.grid));
+        const point_y = int(random(0, this.grid));
+        if(random(0, 1) > 0.5){
+          point = {position: {x: point_x, y: point_y}};
+        } else{
+         const control_points = [];
+         for(let k = 0; k < 4; k++){
+           control_points.push(int(random(0, this.grid)))
+         }
+         point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points};
+        }
+        if(random(0, 1) > 0.5) shape.points.unshift(point);
+        else shape.points.push(point);
+      }
+      if(random(0, 1) < 0.01){
+        const random_point = int(random(0, shape.points.length));
+        const point_x = int(random(0, this.grid));
+        const point_y = int(random(0, this.grid));
+        shape.points[random_point].position = {x: point_x, y: point_y};
+      }
+    }
+  }
+  remove_first_bezier_point(){
+    for(let shape of this.genotype){
+      if(shape.points[0].hasOwnProperty('bezier')){
+        delete shape.points[0].bezier;
+        delete shape.points[0].control_points;
+      }
+    }
   }
   /* Check */
   get_double(){

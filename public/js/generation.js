@@ -6,8 +6,8 @@ class Generation{
     this.get_new_gen = false;
     this.calculate_best_letter_once = true;
     this.letter_to_analyse_current = 0;
-    this.min_child_by_letter = 3;
-    this.max_child_by_letter = 3;
+    this.min_child_by_letter = 3000;
+    this.max_child_by_letter = 3000;
     this.num_polling = 10;
     this.array_rank_calculation = [];
     this.letter_similarity_last_part_current = 0;
@@ -48,14 +48,16 @@ class Generation{
       const ranked_shapes_by_letter = [];
       const max_pooling_by_letter = [];
       for(let j = 0; j < this.shapes.length; j++){
-        const probability = this.shapes[j].DNA.letters_probability[3];
+        const probability = this.shapes[j].DNA.letters_probability[15];
         probability_medium+=probability/this.shapes.length;
-        const genotype = this.shapes[j].DNA.genotype;
-        ranked_shapes_by_letter.push({genotype: genotype, probability: probability});
+        if(probability != 0.001){
+          const genotype = this.shapes[j].DNA.genotype;
+          ranked_shapes_by_letter.push({genotype: genotype, probability: probability});
+        }
       }
       ranked_shapes_by_letter.sort((a, b) => a.probability - b.probability);
       console.log('//////////////////////////////////');
-      console.log('Pour la lettre ' + this.int_to_char[3] + ', meilleur probabilité : ' + ranked_shapes_by_letter[ranked_shapes_by_letter.length - 1].probability + '.');
+      console.log('Pour la lettre ' + this.int_to_char[15] + ', meilleur probabilité : ' + ranked_shapes_by_letter[ranked_shapes_by_letter.length - 1].probability + '.');
       console.log("Probabilité moyenne : " + probability_medium);
       let num_shapes_in_pool;
       if(this.max_child_by_letter < ranked_shapes_by_letter.length){
@@ -64,7 +66,7 @@ class Generation{
         num_shapes_in_pool = ranked_shapes_by_letter.length
       }
       for(let j = 0; j < num_shapes_in_pool; j++){
-        const num_to_add = int(exp(map(j, 0, num_shapes_in_pool - 1, 0, 7)));
+        const num_to_add = map(j, 0, num_shapes_in_pool, exp(0), exp(6));
         for(let k = 0; k < num_to_add; k++){
           max_pooling_by_letter.push({genotype: ranked_shapes_by_letter[j].genotype, index: j});
         }

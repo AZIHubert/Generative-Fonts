@@ -48,7 +48,7 @@ class Generation{
       const ranked_shapes_by_letter = [];
       const max_pooling_by_letter = [];
       for(let j = 0; j < this.shapes.length; j++){
-        const probability = this.shapes[j].DNA.letters_probability[15];
+        const probability = this.shapes[j].DNA.letters_probability[17];
         probability_medium+=probability/this.shapes.length;
         if(probability != 0.001){
           const genotype = this.shapes[j].DNA.genotype;
@@ -57,7 +57,7 @@ class Generation{
       }
       ranked_shapes_by_letter.sort((a, b) => a.probability - b.probability);
       console.log('//////////////////////////////////');
-      console.log('Pour la lettre ' + this.int_to_char[15] + ', meilleur probabilité : ' + ranked_shapes_by_letter[ranked_shapes_by_letter.length - 1].probability + '.');
+      console.log('Pour la lettre ' + this.int_to_char[17] + ', meilleur probabilité : ' + ranked_shapes_by_letter[ranked_shapes_by_letter.length - 1].probability + '.');
       console.log("Probabilité moyenne : " + probability_medium);
       let num_shapes_in_pool;
       if(this.max_child_by_letter < ranked_shapes_by_letter.length){

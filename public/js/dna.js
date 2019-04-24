@@ -20,7 +20,7 @@ class DNA{
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
    this.mutation_rate = [0.01, 0.3, 0.4];
    this.next_point_random = 0.60;
-   this.grid = 6;
+   this.grid = 4;
    this.num_point = 7;
    this.margin = 5;
  }
@@ -34,7 +34,7 @@ class DNA{
      if(i == 0){
        point = {position: {x: point_x, y: point_y}};
      }else{
-       if(random(0, 1) > 0.5){
+       if(random(0, 1) > 0.3){
          point = {position: {x: point_x, y: point_y}};
        } else{
         const control_points = [];
@@ -96,10 +96,10 @@ class DNA{
        const point_x = map(point.position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(point.position.y, 0, this.grid - 1, this.margin, width - this.margin);
        if(point.hasOwnProperty('bezier')){
-         const x2 = point.control_points[0];
-         const y2 = point.control_points[1];
-         const x3 = point.control_points[2];
-         const y3 = point.control_points[3];
+         const x2 = map(point.control_points[0], 0, this.grid - 1, this.margin, width - this.margin);
+         const y2 = map(point.control_points[1], 0, this.grid - 1, this.margin, width - this.margin);
+         const x3 = map(point.control_points[2], 0, this.grid - 1, this.margin, width - this.margin);
+         const y3 = map(point.control_points[3], 0, this.grid - 1, this.margin, width - this.margin);
          bezierVertex(x2, y2, x3, y3, point_x, point_y);
        } else{
          vertex(point_x, point_y);
@@ -274,7 +274,7 @@ class DNA{
         let point;
         const point_x = int(random(0, this.grid));
         const point_y = int(random(0, this.grid));
-        if(random(0, 1) > 0.5){
+        if(random(0, 1) > 0.3){
           point = {position: {x: point_x, y: point_y}};
         } else{
          const control_points = [];

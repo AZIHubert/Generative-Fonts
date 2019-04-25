@@ -20,7 +20,7 @@ class DNA{
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
    this.mutation_rate = [0.01, 0.3, 0.4];
    this.next_point_random = 0.60;
-   this.grid = 4;
+   this.grid = 12;
    this.num_point = 7;
    this.margin = 5;
  }
@@ -265,11 +265,45 @@ class DNA{
           }
         }
       }
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // Pronlem here
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       if(random(0, 1) < 0.01 && shape.points.length > 5){
-        // Splite une two shape if wich point is between 2 and length - 2 and not open and if has sub_shape
         const wich_point = int(random(0, shape.points.length));
-        shape.points.splice(wich_point, 1);
+        if(wich_point > 1 && wich_point < shape.points.length - 2){
+          const new_shapes = [];
+          if(shape.points[wich_point].hasOwnProperty('sub_shape')){
+            for(let sub_shape of shape.points[wich_point].sub_shape){
+              sub_shape.points.unshift(shape.points[wich_point]);
+              if(sub_shapes.points[0].hasOwnProperty('bezier')){
+                delete sub_shapes.points[0].bezier;
+                delete sub_shapes.points[0].control_points;
+              }
+              delete sub_shapes.points[0].sub_shape;
+              this.genotype.push(sub_shape);
+            }
+          }
+          const new_array = shape.points.splice(wich_point);
+          new_array.shift();
+          this.genotype.push({
+            points: new_array,
+            property: ['open']
+          });
+        } else{
+          shape.points.splice(wich_point, 1);
+        }
       }
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // Pronlem here
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       if(random(0, 1) < 0.01){
         let point;
         const point_x = int(random(0, this.grid));
@@ -588,6 +622,12 @@ class DNA{
       }
 
     }
+  }
+  concat_shape(){
+    //if shapes.length > 2
+    //for each shapes
+    //if first or last point position equal point position of other shape and sub_shape
+    //if equal first sub_shape
   }
   create_weight(){
     // Need to modify genotype to add weights padding to each points

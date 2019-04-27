@@ -26,15 +26,13 @@ class DNA{
    this.weight_shape = [];
  }
  create_new_shape(){
-   const num_points = 3;
+   const num_points = 4;
    const shape = {points: [], property: ["open"]};
    for(let i = 0; i < num_points; i++){
      let point_x = int(random(0, this.grid));
      let point_y = int(random(0, this.grid));
-     //const weight_1 = int(random(0, this.margin - 1));
-     //const weight_2 = int(random(0, this.margin - 1));
-     const weight_1 = this.margin
-     const weight_2 = this.margin
+     const weight_1 = int(random(-this.margin, this.margin))
+     const weight_2 = int(random(-this.margin, this.margin))
      let point;
 
      if(i == 0){
@@ -56,9 +54,10 @@ class DNA{
    const weight_2 = this.margin;
    const shape = {
      points: [
-       {position: {x: 5, y: 1}, weight: [weight_1, weight_2]},
-       {position: {x: 2, y: 4}, weight: [weight_1, weight_2]},
-       {position: {x: 5, y: 5}, weight: [weight_1, weight_2]}
+       {position: {x: 5, y: 2}, weight: [weight_1, weight_2]},
+       {position: {x: 3, y: 4}, weight: [weight_1, weight_2]},
+       {position: {x: 4, y: 0}, weight: [weight_1, weight_2], bezier: true, control_points: [1, 1, 0, 5]},
+       {position: {x: 4, y: 2}, weight: [weight_1, weight_2]},
      ],
      property: ['open']
    }*/
@@ -95,7 +94,7 @@ class DNA{
    }
    background(255);
    this.create_weight();
-   for(let shape of sub_shapes){
+   /*for(let shape of sub_shapes){
      if(shape.property.includes("fill")){
        stroke(0);
        fill(0);
@@ -103,7 +102,7 @@ class DNA{
        stroke(255, 0, 0);
        noFill();
      }
-     /*beginShape();
+     beginShape();
      if(shape.hasOwnProperty("attach")){
        const point_x = map(shape.attach.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(shape.attach.y, 0, this.grid - 1, this.margin, width - this.margin);
@@ -112,18 +111,18 @@ class DNA{
      for(let point of shape.points){
        const point_x = map(point.position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(point.position.y, 0, this.grid - 1, this.margin, width - this.margin);
-       /*if(point.hasOwnProperty('bezier')){
+       if(point.hasOwnProperty('bezier')){
          const x2 = map(point.control_points[0], 0, this.grid - 1, this.margin, width - this.margin);
          const y2 = map(point.control_points[1], 0, this.grid - 1, this.margin, width - this.margin);
          const x3 = map(point.control_points[2], 0, this.grid - 1, this.margin, width - this.margin);
          const y3 = map(point.control_points[3], 0, this.grid - 1, this.margin, width - this.margin);
          bezierVertex(x2, y2, x3, y3, point_x, point_y);
-       } else{*/
-         //vertex(point_x, point_y);
-       //}
+       } else{
+        vertex(point_x, point_y);
+       }
 
      }
-     /*if(shape.hasOwnProperty("attach") && shape.property.includes('close')){
+     if(shape.hasOwnProperty("attach") && shape.property.includes('close')){
        const point_x = map(shape.points[0].position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(shape.points[0].position.y, 0, this.grid - 1, this.margin, width - this.margin);
        vertex(point_x, point_y);
@@ -362,6 +361,10 @@ class DNA{
       if(shape.points[0].hasOwnProperty('bezier')){
         delete shape.points[0].bezier;
         delete shape.points[0].control_points;
+      }
+      if(shape.points[shape.points.length -1].hasOwnProperty('bezier')){
+        delete shape.points[shape.points.length -1].bezier;
+        delete shape.points[shape.points.length -1].control_points;
       }
     }
   }
@@ -636,7 +639,6 @@ class DNA{
               shape.points[neighbour_point].sub_shape.push(new_sub_shape[0]);
             }
           } else {
-
             if(neighbour_point == shape.points.length - 1){
               shape.points = shape.points.concat(new_sub_shape[0].points)
             } else{
@@ -659,9 +661,7 @@ class DNA{
     //if equal first sub_shape
   }
   create_weight(){
-    const first_weight = [];
-    const second_weight = [];
-    console.log('///')
+    // For each shape and sub_shapes;
     const margin_vector = createVector(this.margin, this.margin)
     for(let shape of this.genotype){
       if(shape.property.includes('open')){
@@ -681,37 +681,42 @@ class DNA{
             const point_3 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
             const vector_1 = p5.Vector.sub(point_3, point_2).setMag(50);
             const vector_2 = p5.Vector.sub(point_1, point_2);
-            const hv1 = vector_1.heading();
-            const hv2 = vector_2.heading();
-            console.log(vector_1.heading(), vector_2.heading());
-            if((hv1 > hv2 && hv1 <= PI/2 && hv1 >= 0 && hv2 <= PI/2 && hv2 >= 0) ||
-               ((hv1 > hv2 || (hv1 <= -PI/2 && (hv1 >= -PI || hv1 == PI) && hv2 == PI)) && hv1 <= -PI/2 && (hv1 >= -PI || hv1 == PI) && hv2 <= -PI/2 && (hv2 >= -PI || hv2 == PI)) ||
-               (hv1 > hv2 && hv1 <= 0 && hv1 >= -PI/2 && hv2 <= 0 && hv2 >= -PI/2) ||
-               (hv1 > hv2 && hv1 >= PI/2 && hv2 <= PI && hv2 >= PI/2 && hv2 <= PI) ||
-               (hv1 >= PI/2 && hv2 <= PI && hv2 >= -PI/2 && hv2 <= 0) ||
-               (hv1 <= -PI/2 && (hv1 > -PI || hv1 == PI) && hv2 >= PI/2 && hv2 <= PI) ||
-               (hv1 <= 0 && hv1 >= -PI/2 && hv2 <= -PI/2 && (hv2 > -PI || hv2 == PI)) ||
-               (hv1 >= PI/2 && hv1 <= PI && hv2 >= 0 && hv2 <= PI/2) ||
-               (hv1 >= 0 && hv1 <+ PI/2 && hv2 <= 0 && hv2 >= -PI/2)){
-              vertex = p5.Vector.fromAngle(vector_1.heading() - vector_2.angleBetween(vector_1)/2, shape.points[i].weight[0]);
-            } else{
-              vertex = p5.Vector.fromAngle(vector_1.heading() + vector_2.angleBetween(vector_1)/2, shape.points[i].weight[0]);
+            let hv1 = vector_1.heading();
+            let hv2 = vector_2.heading();
+            if(hv2 < 0){
+              hv2 += TWO_PI;
             }
-
-            stroke(0, 0, 255);
-            line(width/2, 0, width/2, height);
-            line(0, height/2, width, height/2);
-            stroke(0);
-            line(width/2, height/2, vector_1.x + width/2, vector_1.y + height/2);
-            line(width/2, height/2, vector_2.x + width/2, vector_2.y + height/2);
-            ellipse(vector_1.x + width/2, vector_1.y + height/2, 10, 10);
-            stroke(255, 0, 0);
-            line(width/2, height/2, vertex.x + width/2, vertex.y + height/2);
-
+            if(hv1 < 0){
+              hv1 += TWO_PI;
+            }
+            if(hv1 > hv2){
+              if(((hv1 > PI && hv2 < PI) || (hv1 < PI && hv2 > PI)) && ((vector_1.x >= 0 && vector_2.x >= 0) || (vector_1.x > 0 && vector_2.x < 0) || (vector_1.x < 0 && vector_2.x > 0))){
+                vertex = p5.Vector.fromAngle(hv1 + vector_2.angleBetween(vector_1)/2);
+              } else{
+                vertex = p5.Vector.fromAngle(hv2 + vector_2.angleBetween(vector_1)/2);
+              }
+            } else{
+              if((hv1 > PI && hv2 < PI) || (hv1 < PI && hv2 > PI) && ((vector_1.x >= 0 && vector_2.x >= 0) || (vector_1.x > 0 && vector_2.x < 0) || (vector_1.x < 0 && vector_2.x > 0))){
+                vertex = p5.Vector.fromAngle(hv2 + vector_2.angleBetween(vector_1)/2);
+              } else{
+                vertex = p5.Vector.fromAngle(hv1 + vector_2.angleBetween(vector_1)/2);
+              }
+            }
+            vertex.setMag(shape.points[i].weight[0])
+            vertex.add(margin_vector).add(point_2);
           }
-          first_weight.push(vertex);
+          const point = {
+            position: {x: vertex.x, y: vertex.y}
+          }
+          if(shape.points[i].hasOwnProperty('bezier')){
+            point.bezier = true;
+            point.control_points = shape.points[i].control_points;
+          }
+          this.weight_shape.push(point);
+
         }
-        /*for(let i = shape.points.length - 1; i >= 0; i--){
+
+        for(let i = shape.points.length - 1; i >= 0; i--){
           let vertex;
           if(i == 0){
             const point_1 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
@@ -725,49 +730,71 @@ class DNA{
             const point_1 = createVector(map(shape.points[i- 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i - 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
             const point_2 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
             const point_3 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
-            const vector_1 = p5.Vector.sub(point_1, point_2);
-            const vector_2 = p5.Vector.sub(point_3, point_2);
-            let angleBetween = p5.Vector.sub(point_1, point_2).heading();
-            console.log(second_weight)
-            console.log(point_3, map(i, shape.points.length - 1, 0, 0, shape.points.length - 1), second_weight[map(i, shape.points.length - 1, 0, 0, shape.points.length - 1)]);
-            const v1 = p5.Vector.sub(second_weight[map(i, shape.points.length - 1, 0, 0, shape.points.length - 1) - 1], point_3.add(margin_vector));
-            console.log(v1)
-            const v2 = p5.Vector.sub(point_1, point_3);
-            stroke(0, 0, 255);
-            line(width/2, width/2, v1.x + width/2, v1.y + width/2)
-            line(width/2, width/2, v2.x + width/2, v2.y + width/2)
-            console.log(v1.angleBetween(v2), PI/2);
-            if(v1.angleBetween(v2) < PI/2){
-              angleBetween -= vector_1.angleBetween(vector_2)/2;
-              shape.points[i].weight[1] *= -1
-            } else {
-              angleBetween += vector_1.angleBetween(vector_2)/2;
-              shape.points[i].weight[1] *= -1
+            const vector_1 = p5.Vector.sub(point_3, point_2).setMag(50);
+            const vector_2 = p5.Vector.sub(point_1, point_2);
+            let hv1 = vector_1.heading();
+            let hv2 = vector_2.heading();
+            if(hv2 < 0){
+              hv2 += TWO_PI;
             }
-
-            vertex = p5.Vector.fromAngle(angleBetween, shape.points[i].weight[1]).add(margin_vector).add(point_2);
+            if(hv1 < 0){
+              hv1 += TWO_PI;
+            }
+            if(hv1 > hv2){
+              if(((hv1 > PI && hv2 < PI) || (hv1 < PI && hv2 > PI)) && ((vector_1.x >= 0 && vector_2.x >= 0) || (vector_1.x > 0 && vector_2.x < 0) || (vector_1.x < 0 && vector_2.x > 0))){
+                vertex = p5.Vector.fromAngle(hv1 + vector_2.angleBetween(vector_1)/2, -shape.points[i].weight[0]);
+              } else{
+                vertex = p5.Vector.fromAngle(hv2 + vector_2.angleBetween(vector_1)/2, -shape.points[i].weight[0]);
+              }
+            } else{
+              if((hv1 > PI && hv2 < PI) || (hv1 < PI && hv2 > PI) && ((vector_1.x >= 0 && vector_2.x >= 0) || (vector_1.x > 0 && vector_2.x < 0) || (vector_1.x < 0 && vector_2.x > 0))){
+                vertex = p5.Vector.fromAngle(hv2 + vector_2.angleBetween(vector_1)/2, -shape.points[i].weight[0]);
+              } else{
+                vertex = p5.Vector.fromAngle(hv1 + vector_2.angleBetween(vector_1)/2, -shape.points[i].weight[0]);
+              }
+            }
+            vertex.add(margin_vector).add(point_2);
+          }
+          const point = {
+            position: {x: vertex.x, y: vertex.y}
+          }
+          if(i < shape.points.length - 1){
+            if(shape.points[i + 1].hasOwnProperty('bezier')){
+              point.bezier = true;
+              point.control_points = [shape.points[i + 1].control_points[2], shape.points[i + 1].control_points[3], shape.points[i + 1].control_points[0], shape.points[i + 1].control_points[1]];
+            }
           }
 
-          second_weight.push(vertex);
-        }*/
+          this.weight_shape.push(point);
+        }
       }
     }
-    /*noFill()
-    stroke(0, 0, 255);
+    noStroke();
+    fill(0);
     beginShape();
-    for(let i = 0; i < first_weight.length; i++){
-
-      vertex(first_weight[i].x, first_weight[i].y)
-    }*/
-    endShape();
-    noFill()
-    stroke(0, 255, 0);
-    beginShape();
-    for(let i = 0; i < second_weight.length; i++){
-      vertex(second_weight[i].x, second_weight[i].y)
+    for(let i = 0; i < this.weight_shape.length; i++){
+      if(this.weight_shape[i].hasOwnProperty('bezier')){
+        const x2 = map(this.weight_shape[i].control_points[0], 0, this.grid - 1, this.margin, width - this.margin);
+        const y2 = map(this.weight_shape[i].control_points[1], 0, this.grid - 1, this.margin, width - this.margin);
+        const x3 = map(this.weight_shape[i].control_points[2], 0, this.grid - 1, this.margin, width - this.margin);
+        const y3 = map(this.weight_shape[i].control_points[3], 0, this.grid - 1, this.margin, width - this.margin);
+        bezierVertex(x2, y2, x3, y3, this.weight_shape[i].position.x, this.weight_shape[i].position.y);
+      } else{
+       vertex(this.weight_shape[i].position.x, this.weight_shape[i].position.y)
+      }
     }
-    endShape();
+    endShape(CLOSE);
 
+    /*for(let i = 0; i < this.weight_shape.length; i++){
+      if(i == 0){
+        fill(255, 0, 0);
+      }else if(i < this.weight_shape.length/2){
+        fill(0, 255, 0);
+      } else{
+        fill(0, 0, 255);
+      }
+      ellipse(this.weight_shape[i].position.x, this.weight_shape[i].position.y, 4, 4);
+    }*/
   }
   predict_letter(model){
     const output = tf.tidy(() => model.predict(tf.tensor4d(this.pixels, [1, sqrt(this.pixels.length), sqrt(this.pixels.length), 1], 'float32')).dataSync());

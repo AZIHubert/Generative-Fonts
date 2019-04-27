@@ -18,11 +18,12 @@ class DNA{
    this.letter_similarity_probability = 0;
    this.letters_probability_ratio = 0.99
    this.letter_similarity_ratio = 1 - this.letters_probability_ratio;
-   this.mutation_rate = [0.01, 0.3, 0.4];
    this.next_point_random = 0.60;
-   this.grid = 12;
+   this.grid = 6;
    this.num_point = 7;
-   this.margin = 5;
+   this.margin = 10;
+   this.max_weight = 10;
+   this.weight_shape = [];
  }
  create_new_shape(){
    const num_points = 3;
@@ -30,22 +31,37 @@ class DNA{
    for(let i = 0; i < num_points; i++){
      let point_x = int(random(0, this.grid));
      let point_y = int(random(0, this.grid));
+     //const weight_1 = int(random(0, this.margin - 1));
+     //const weight_2 = int(random(0, this.margin - 1));
+     const weight_1 = this.margin
+     const weight_2 = this.margin
      let point;
+
      if(i == 0){
-       point = {position: {x: point_x, y: point_y}};
+       point = {position: {x: point_x, y: point_y}, weight: [weight_1, weight_2]};
      }else{
-       if(random(0, 1) > 0.3){
-         point = {position: {x: point_x, y: point_y}};
+       if(random(0, 1) > 0.2){
+         point = {position: {x: point_x, y: point_y}, weight: [weight_1, weight_2]};
        } else{
         const control_points = [];
         for(let k = 0; k < 4; k++){
           control_points.push(int(random(0, this.grid)))
         }
-        point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points};
+        point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points, weight: [weight_1, weight_2]};
        }
      }
      shape.points.push(point);
    }
+   /*const weight_1 = this.margin;
+   const weight_2 = this.margin;
+   const shape = {
+     points: [
+       {position: {x: 5, y: 1}, weight: [weight_1, weight_2]},
+       {position: {x: 2, y: 4}, weight: [weight_1, weight_2]},
+       {position: {x: 5, y: 5}, weight: [weight_1, weight_2]}
+     ],
+     property: ['open']
+   }*/
    this.genotype.push(shape);
 
    this.remove_empty_shape();
@@ -78,15 +94,16 @@ class DNA{
      has_sub_shape = (count_sub_shape) ? true: false;
    }
    background(255);
+   this.create_weight();
    for(let shape of sub_shapes){
      if(shape.property.includes("fill")){
        stroke(0);
        fill(0);
      } else{
-       stroke(0);
+       stroke(255, 0, 0);
        noFill();
      }
-     beginShape();
+     /*beginShape();
      if(shape.hasOwnProperty("attach")){
        const point_x = map(shape.attach.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(shape.attach.y, 0, this.grid - 1, this.margin, width - this.margin);
@@ -95,18 +112,18 @@ class DNA{
      for(let point of shape.points){
        const point_x = map(point.position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(point.position.y, 0, this.grid - 1, this.margin, width - this.margin);
-       if(point.hasOwnProperty('bezier')){
+       /*if(point.hasOwnProperty('bezier')){
          const x2 = map(point.control_points[0], 0, this.grid - 1, this.margin, width - this.margin);
          const y2 = map(point.control_points[1], 0, this.grid - 1, this.margin, width - this.margin);
          const x3 = map(point.control_points[2], 0, this.grid - 1, this.margin, width - this.margin);
          const y3 = map(point.control_points[3], 0, this.grid - 1, this.margin, width - this.margin);
          bezierVertex(x2, y2, x3, y3, point_x, point_y);
-       } else{
-         vertex(point_x, point_y);
-       }
+       } else{*/
+         //vertex(point_x, point_y);
+       //}
 
      }
-     if(shape.hasOwnProperty("attach") && shape.property.includes('close')){
+     /*if(shape.hasOwnProperty("attach") && shape.property.includes('close')){
        const point_x = map(shape.points[0].position.x, 0, this.grid - 1, this.margin, width - this.margin);
        const point_y = map(shape.points[0].position.y, 0, this.grid - 1, this.margin, width - this.margin);
        vertex(point_x, point_y);
@@ -116,7 +133,7 @@ class DNA{
      } else{
        endShape();
      }
-   }
+   }*/
  }
  /* Check */
  get_pixels(){
@@ -249,6 +266,7 @@ class DNA{
       }
     }
     for(let shape of shapes){
+      // Change shape property
       if(random(0, 1) < 0.0005){
         if(shape.property.includes('open')){
           shape.property = ['close'];
@@ -265,16 +283,10 @@ class DNA{
           }
         }
       }
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // Pronlem here
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      if(random(0, 1) < 0.01 && shape.points.length > 5){
+      // Remove point
+      if(random(0, 1) < 0.01 && shape.points.length > 2){
         const wich_point = int(random(0, shape.points.length));
-        if(wich_point > 1 && wich_point < shape.points.length - 2){
+        if(shape.points.length < 5 && wich_point > 1 && wich_point < shape.points.length - 2){
           const new_shapes = [];
           if(shape.points[wich_point].hasOwnProperty('sub_shape')){
             for(let sub_shape of shape.points[wich_point].sub_shape){
@@ -297,34 +309,51 @@ class DNA{
           shape.points.splice(wich_point, 1);
         }
       }
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // Pronlem here
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // Add point
       if(random(0, 1) < 0.01){
         let point;
         const point_x = int(random(0, this.grid));
         const point_y = int(random(0, this.grid));
-        if(random(0, 1) > 0.3){
-          point = {position: {x: point_x, y: point_y}};
+        const weight = int(random(0, this.weight))
+        if(random(0, 1) > 0.2){
+          point = {position: {x: point_x, y: point_y}, weight: weight};
         } else{
          const control_points = [];
          for(let k = 0; k < 4; k++){
            control_points.push(int(random(0, this.grid)))
          }
-         point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points};
+         point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points, weight: weight};
         }
         if(random(0, 1) > 0.5) shape.points.unshift(point);
         else shape.points.push(point);
       }
+      // Move Point
       if(random(0, 1) < 0.01){
         const random_point = int(random(0, shape.points.length));
         const point_x = int(random(0, this.grid));
         const point_y = int(random(0, this.grid));
         shape.points[random_point].position = {x: point_x, y: point_y};
+      }
+      // Add sub_shape
+      if(random(0, 1) < 0.01 && shape.points.length > 3){
+        const wich_point = int(random(1, shape.points.length - 1));
+        let point;
+        const point_x = int(random(0, this.grid));
+        const point_y = int(random(0, this.grid));
+        const weight = int(random(0, this.weight))
+        if(random(0, 1) > 0.2){
+          point = {position: {x: point_x, y: point_y}, weight: weight};
+        } else{
+         const control_points = [];
+         for(let k = 0; k < 4; k++){
+           control_points.push(int(random(0, this.grid)))
+         }
+         point = {position: {x: point_x, y: point_y}, bezier: true, control_points: control_points, weight: weight};
+        }
+        if(!shape.points[wich_point].hasOwnProperty('sub_shape')) shape.points[wich_point].sub_shape = [];
+        shape.points[wich_point].sub_shape.push({
+          points: [point], property: ['open']
+        });
       }
     }
   }
@@ -630,8 +659,115 @@ class DNA{
     //if equal first sub_shape
   }
   create_weight(){
-    // Need to modify genotype to add weights padding to each points
-    // Follow point left right with padding random(1, 4)
+    const first_weight = [];
+    const second_weight = [];
+    console.log('///')
+    const margin_vector = createVector(this.margin, this.margin)
+    for(let shape of this.genotype){
+      if(shape.property.includes('open')){
+        for(let i = 0; i < shape.points.length; i++){
+          let vertex;
+          if(i == 0){
+            const point_1 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            vertex = p5.Vector.fromAngle(p5.Vector.sub(point_2, point_1).heading() - PI/2, shape.points[i].weight[0]).add(margin_vector).add(point_1);
+          } else if(i == shape.points.length - 1){
+            const point_1 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i - 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i - 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            vertex = p5.Vector.fromAngle(p5.Vector.sub(point_1, point_2).heading() - PI/2, shape.points[i].weight[0]).add(margin_vector).add(point_1);
+          } else{
+            const point_1 = createVector(map(shape.points[i- 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i - 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_3 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const vector_1 = p5.Vector.sub(point_3, point_2).setMag(50);
+            const vector_2 = p5.Vector.sub(point_1, point_2);
+            const hv1 = vector_1.heading();
+            const hv2 = vector_2.heading();
+            console.log(vector_1.heading(), vector_2.heading());
+            if((hv1 > hv2 && hv1 <= PI/2 && hv1 >= 0 && hv2 <= PI/2 && hv2 >= 0) ||
+               ((hv1 > hv2 || (hv1 <= -PI/2 && (hv1 >= -PI || hv1 == PI) && hv2 == PI)) && hv1 <= -PI/2 && (hv1 >= -PI || hv1 == PI) && hv2 <= -PI/2 && (hv2 >= -PI || hv2 == PI)) ||
+               (hv1 > hv2 && hv1 <= 0 && hv1 >= -PI/2 && hv2 <= 0 && hv2 >= -PI/2) ||
+               (hv1 > hv2 && hv1 >= PI/2 && hv2 <= PI && hv2 >= PI/2 && hv2 <= PI) ||
+               (hv1 >= PI/2 && hv2 <= PI && hv2 >= -PI/2 && hv2 <= 0) ||
+               (hv1 <= -PI/2 && (hv1 > -PI || hv1 == PI) && hv2 >= PI/2 && hv2 <= PI) ||
+               (hv1 <= 0 && hv1 >= -PI/2 && hv2 <= -PI/2 && (hv2 > -PI || hv2 == PI)) ||
+               (hv1 >= PI/2 && hv1 <= PI && hv2 >= 0 && hv2 <= PI/2) ||
+               (hv1 >= 0 && hv1 <+ PI/2 && hv2 <= 0 && hv2 >= -PI/2)){
+              vertex = p5.Vector.fromAngle(vector_1.heading() - vector_2.angleBetween(vector_1)/2, shape.points[i].weight[0]);
+            } else{
+              vertex = p5.Vector.fromAngle(vector_1.heading() + vector_2.angleBetween(vector_1)/2, shape.points[i].weight[0]);
+            }
+
+            stroke(0, 0, 255);
+            line(width/2, 0, width/2, height);
+            line(0, height/2, width, height/2);
+            stroke(0);
+            line(width/2, height/2, vector_1.x + width/2, vector_1.y + height/2);
+            line(width/2, height/2, vector_2.x + width/2, vector_2.y + height/2);
+            ellipse(vector_1.x + width/2, vector_1.y + height/2, 10, 10);
+            stroke(255, 0, 0);
+            line(width/2, height/2, vertex.x + width/2, vertex.y + height/2);
+
+          }
+          first_weight.push(vertex);
+        }
+        /*for(let i = shape.points.length - 1; i >= 0; i--){
+          let vertex;
+          if(i == 0){
+            const point_1 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            vertex = p5.Vector.fromAngle(p5.Vector.sub(point_2, point_1).heading() - PI/2, -shape.points[i].weight[0]).add(margin_vector).add(point_1);
+          } else if(i == shape.points.length - 1){
+            const point_1 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i - 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i - 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            vertex = p5.Vector.fromAngle(p5.Vector.sub(point_1, point_2).heading() - PI/2, -shape.points[i].weight[0]).add(margin_vector).add(point_1);
+          } else{
+            const point_1 = createVector(map(shape.points[i- 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i - 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_2 = createVector(map(shape.points[i].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const point_3 = createVector(map(shape.points[i + 1].position.x, 0, this.grid - 1, 0, width - this.margin * 2), map(shape.points[i + 1].position.y, 0, this.grid - 1, 0, width - this.margin * 2));
+            const vector_1 = p5.Vector.sub(point_1, point_2);
+            const vector_2 = p5.Vector.sub(point_3, point_2);
+            let angleBetween = p5.Vector.sub(point_1, point_2).heading();
+            console.log(second_weight)
+            console.log(point_3, map(i, shape.points.length - 1, 0, 0, shape.points.length - 1), second_weight[map(i, shape.points.length - 1, 0, 0, shape.points.length - 1)]);
+            const v1 = p5.Vector.sub(second_weight[map(i, shape.points.length - 1, 0, 0, shape.points.length - 1) - 1], point_3.add(margin_vector));
+            console.log(v1)
+            const v2 = p5.Vector.sub(point_1, point_3);
+            stroke(0, 0, 255);
+            line(width/2, width/2, v1.x + width/2, v1.y + width/2)
+            line(width/2, width/2, v2.x + width/2, v2.y + width/2)
+            console.log(v1.angleBetween(v2), PI/2);
+            if(v1.angleBetween(v2) < PI/2){
+              angleBetween -= vector_1.angleBetween(vector_2)/2;
+              shape.points[i].weight[1] *= -1
+            } else {
+              angleBetween += vector_1.angleBetween(vector_2)/2;
+              shape.points[i].weight[1] *= -1
+            }
+
+            vertex = p5.Vector.fromAngle(angleBetween, shape.points[i].weight[1]).add(margin_vector).add(point_2);
+          }
+
+          second_weight.push(vertex);
+        }*/
+      }
+    }
+    /*noFill()
+    stroke(0, 0, 255);
+    beginShape();
+    for(let i = 0; i < first_weight.length; i++){
+
+      vertex(first_weight[i].x, first_weight[i].y)
+    }*/
+    endShape();
+    noFill()
+    stroke(0, 255, 0);
+    beginShape();
+    for(let i = 0; i < second_weight.length; i++){
+      vertex(second_weight[i].x, second_weight[i].y)
+    }
+    endShape();
+
   }
   predict_letter(model){
     const output = tf.tidy(() => model.predict(tf.tensor4d(this.pixels, [1, sqrt(this.pixels.length), sqrt(this.pixels.length), 1], 'float32')).dataSync());

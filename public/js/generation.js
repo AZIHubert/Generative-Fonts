@@ -6,8 +6,8 @@ class Generation{
     this.get_new_gen = false;
     this.calculate_best_letter_once = true;
     this.letter_to_analyse_current = 0;
-    this.min_child_by_letter = 3000;
-    this.max_child_by_letter = 3000;
+    this.min_child_by_letter = 300;
+    this.max_child_by_letter = 300;
     this.num_polling = 10;
     this.array_rank_calculation = [];
     this.letter_similarity_last_part_current = 0;

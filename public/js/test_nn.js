@@ -13,8 +13,11 @@ const int_to_char = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                      'à', 'â', 'ç', 'é', 'è', 'ê', 'ë', 'î', 'ï', 'ô', 'ù', 'û', 'ü',
                      'À', 'Â', 'Ç', 'É', 'È', 'Ê', 'Ë', 'Î', 'Ï', 'Ô', 'Ù', 'Û', 'Ü',
                      '.', '?', '!', ',', ';', ':', '/', '\\', '«', '<','(', '[', '{', '»','>', ')',  ']', '}', '"', "'", '-', '_', '&', '#', '@', '$', '+', '=', '%', '*', '#', '°', '§'];
+function preload() {
+  myFont = loadFont('../assets/fonts/abel-fontfacekit/web fonts/abel_regular_macroman/abel-regular-webfont.ttf');
+}
 function setup(){
-  createCanvas(64, 64);
+  createCanvas(128, 128);
   background(255);
   pixelDensity(1);
   load_model().then(model_ => {
@@ -32,11 +35,17 @@ function setup(){
 
 function draw(){
   background(255);
+  fill(0);
+  noStroke();
+  textFont(myFont);
+  textSize(60);
+  text('a', mouseX, mouseY);
   if(can_test){
     for(shape of shapes){
       noFill();
       strokeWeight(2);
-      stroke(0);
+      noStroke();
+
       beginShape();
       for(point of shape){
         vertex(point.x, point.y);
@@ -51,7 +60,7 @@ function draw(){
 }
 
 async function load_model(){
-  const model = await tf.loadLayersModel('http://localhost:3000/assets/models/letter_recognition/model.json');
+  const model = await tf.loadLayersModel('http://localhost:3000/assets/models/letter_recognition/model_0/model.json');
   model.summary();
   return model;
 }
@@ -71,7 +80,14 @@ function mouseReleased(){
         pix.push(p);
       }
     updatePixels();
+    const output = tf.tidy(() => model.predict(tf.tensor4d(pix, [1, sqrt(pix.length), sqrt(pix.length), 1], 'float32')).max().dataSync());
+    let output_array = Array.from(output);
+    output_array.shift();
+    console.log(tf.tensor1d(output_array).max().dataSync());
+
+
     model.predict(tf.tensor4d(pix, [1, sqrt(pix.length), sqrt(pix.length), 1])).argMax([-1]).data().then(data_argMax => {
+      console.log(data_argMax);
       if(data_argMax[0] == 0){
         model.predict(tf.tensor4d(pix, [1, sqrt(pix.length), sqrt(pix.length), 1])).data().then(data => {
           data = Array.from(data);

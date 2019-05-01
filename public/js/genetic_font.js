@@ -1,5 +1,6 @@
 let population;
 let i = 0;
+let stop = false;
 function setup(){
   createCanvas(128, 128);
   pixelDensity(1);
@@ -8,4 +9,5 @@ function setup(){
 }
 function draw(){
   population.create_next_generation();
+
 }
